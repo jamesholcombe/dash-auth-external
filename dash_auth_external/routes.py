@@ -18,23 +18,15 @@ def make_code_challenge(length: int = 40):
     return code_challenge, code_verifier
 
 
-def make_routes(
+def make_auth_route(
     app: Flask,
     external_auth_url: str,
-    external_token_url: str,
     client_id: str,
     auth_suffix: str,
-    redirect_suffix: str,
     redirect_uri: str,
-    with_pkce :bool = True,
-    auth_request_headers: dict = None,
-    token_request_headers: dict = None,
+    with_pkce: bool = True,
     client_secret: str = None,
     scope: str = None,
-    _token_cookie: str = "token",
-    _token_field_name: str = "access_token",
-    _home_suffix : str = "/home",
-    **kwargs
 ):
     @app.route(auth_suffix)
     def get_auth_code():
@@ -49,12 +41,14 @@ def make_routes(
             code_challenge, code_verifier = make_code_challenge()
             session["cv"] = code_verifier
 
-        og = OAuth2Session(
+        # TODO implement this myself
+        oauth_session = OAuth2Session(
             client_id,
+            client_secret=client_secret,
             redirect_uri=redirect_uri,
             scope=scope,
         )
-        authorization_url, state = og.authorization_url(
+        authorization_url, state = oauth_session.authorization_url(
             external_auth_url,
             code_challenge=code_challenge,
             code_challenge_method="S256",
@@ -65,6 +59,22 @@ def make_routes(
         resp = redirect(authorization_url)
         return resp
 
+    return app
+
+
+def make_access_token_route(
+    app: Flask,
+    external_token_url: str,
+    client_id: str,
+    redirect_suffix: str,
+    _home_suffix: str,
+    redirect_uri: str,
+    with_pkce: bool = True,
+    token_request_headers: dict = None,
+    client_secret: str = None,
+    _token_cookie: str = "token",
+    _token_field_name: str = "access_token",
+):
     @app.route(redirect_suffix, methods=["GET", "POST"])
     def get_token():
 
@@ -87,7 +97,10 @@ def make_routes(
         )
 
         r = requests.post(external_token_url, data=body, headers=headers)
-        r.raise_for_status()
+        if r.status_code != 200:
+            raise requests.RequestException(
+                f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
+            )
 
         response = redirect(_home_suffix)
         token = r.json()[_token_field_name]
