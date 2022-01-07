@@ -9,7 +9,7 @@ setup(
     version="0.1",
     description="Integrate Dash with 3rd Parties and external providers",
     author_email="jholcombe@hotmail.co.uk",
-    url="",
+    url="https://pypi.org/project/dash-auth-external/",
     keywords=["Dash", "Plotly", "Authentication", "Auth", "External"],
     install_requires=REQUIRES,
     packages=find_packages(),
