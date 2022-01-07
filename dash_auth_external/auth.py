@@ -1,5 +1,6 @@
 from flask import Flask
 import flask
+from werkzeug.routing import RoutingException, ValidationError
 from .routes import make_access_token_route, make_auth_route
 from urllib.parse import urljoin
 import os
@@ -21,7 +22,13 @@ class DashAuthExternal:
         Returns:
             str: Bearer Access token from your OAuth2 Provider
         """
-        return flask.request.cookies.get(self._token_cookie)
+
+        try:
+            return flask.request.cookies.get(self._token_cookie)
+        except RuntimeError:
+            raise ValueError(
+                "This method must be called in a callback as it makes use of the flask request context."
+            )
 
     def __init__(
         self,
@@ -60,7 +67,7 @@ class DashAuthExternal:
 
         Returns:
            DashAuthExternal: Main package class
-        """    
+        """
         app = Flask(__name__, instance_relative_config=False)
 
         self._token_cookie = _token_cookie
@@ -88,9 +95,10 @@ class DashAuthExternal:
             external_token_url=external_token_url,
             client_id=client_id,
             client_secret=client_secret,
+            redirect_uri=redirect_uri,
             redirect_suffix=redirect_suffix,
             _home_suffix=home_suffix,
             token_request_headers=token_request_headers,
         )
 
-        return app
+        self.server = app

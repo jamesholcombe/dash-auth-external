@@ -8,6 +8,8 @@ import requests
 import hashlib
 from requests_oauthlib import OAuth2Session
 
+os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
+
 
 def make_code_challenge(length: int = 40):
     code_verifier = base64.urlsafe_b64encode(os.urandom(length)).decode("utf-8")
@@ -27,11 +29,11 @@ def make_auth_route(
     with_pkce: bool = True,
     client_secret: str = None,
     scope: str = None,
+    auth_request_headers: dict = None,
 ):
     @app.route(auth_suffix)
     def get_auth_code():
-        """Step 1: User Authorization.
-
+        """
         Redirect the user/resource owner to the OAuth provider
         using an URL with a few key OAuth parameters.
         """
@@ -44,7 +46,6 @@ def make_auth_route(
         # TODO implement this myself
         oauth_session = OAuth2Session(
             client_id,
-            client_secret=client_secret,
             redirect_uri=redirect_uri,
             scope=scope,
         )

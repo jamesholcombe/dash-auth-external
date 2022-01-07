@@ -4,7 +4,7 @@
 
 ## Overview
 
-Do you want to build an app which pulls user data from Google, Spotify, Slack etc?
+Do you want to build a Plotly Dash app which pulls user data from Google, Spotify, Slack etc?
 
 **Dash-auth-external** provides a simple interface to authenticate users through OAuth2 code flow. Allowing developers to serve user tailored content. 
 
@@ -15,7 +15,18 @@ Do you want to build an app which pulls user data from Google, Spotify, Slack et
 pip install dash-auth-external
 ```
 ## Simple Usage
-TODO
+```
+auth = DashAuthExternal()
+
+
+server = 
+
+
+
+
+
+```
+
 
 
 
