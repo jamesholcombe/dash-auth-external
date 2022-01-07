@@ -9,7 +9,7 @@ Do you want to build a Plotly Dash app which pulls user data from Google, Spotif
 **Dash-auth-external** provides a simple interface to authenticate users through OAuth2 code flow. Allowing developers to serve user tailored content. 
 
 ## Installation
-**Dash-auth-external** is distributed via **PyPi**
+**Dash-auth-external** is distributed via [PyPi](https://pypi.org/project/dash-auth-external/)
 
 ``` 
 pip install dash-auth-external
