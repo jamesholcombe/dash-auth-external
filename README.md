@@ -26,7 +26,7 @@ auth = DashAuthExternal(AUTH_URL, TOKEN_URL, CLIENT_ID)
 ```
 We then pass the flask server from this object to dash on init.
 ```
-app = Dash(__name__, server=server)
+app = Dash(__name__, server= auth.server)
 ```
 That's it! You can now define your layout and callbacks as usual. 
 > To obtain your access token, call the get_token method of your Auth object.
