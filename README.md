@@ -1,6 +1,6 @@
 # dash-auth-external
 
- Integrate your dashboards with 3rd parties and external providers. 
+ Integrate your dashboards with 3rd parties and external OAuth providers. 
 
 ## Overview
 
