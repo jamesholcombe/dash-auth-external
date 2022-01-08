@@ -6,15 +6,15 @@ NAME = "dash-auth-external"
 
 setup(
     name=NAME,
-    version="0.1",
+    version="0.2.1",
     description="Integrate Dash with 3rd Parties and external providers",
     author_email="jholcombe@hotmail.co.uk",
-    url="https://pypi.org/project/dash-auth-external/",
+    url="https://github.com/jamesholcombe/dash-auth-external",
     keywords=["Dash", "Plotly", "Authentication", "Auth", "External"],
     install_requires=REQUIRES,
     packages=find_packages(),
     include_package_data=True,
     long_description="""\
-    Integrate Dash with 3rd Parties and external providers"
+    Integrate Plotly Dash with 3rd Parties and external providers."
     """,
 )

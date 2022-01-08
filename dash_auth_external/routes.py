@@ -63,50 +63,71 @@ def make_auth_route(
     return app
 
 
+def build_token_body(
+    url,
+    redirect_uri: str,
+    client_id: str,
+    with_pkce: bool = True,
+    client_secret: str = None,
+    
+):
+    query = urllib.parse.urlparse(url).query
+    redirect_params = urllib.parse.parse_qs(query)
+    code = redirect_params["code"][0]
+    state = redirect_params["state"][0]
+    code_verifier = session["cv"] 
+
+    body = dict(
+        grant_type="authorization_code",
+        code=code,
+        redirect_uri=redirect_uri,
+        code_verifier=code_verifier,
+        client_id=client_id,
+        state=state,
+        client_secret=client_secret,
+    )
+    return body
+
 def make_access_token_route(
     app: Flask,
     external_token_url: str,
-    client_id: str,
     redirect_suffix: str,
     _home_suffix: str,
     redirect_uri: str,
+    client_id: str,
     with_pkce: bool = True,
-    token_request_headers: dict = None,
     client_secret: str = None,
+    token_request_headers: dict = None,
+    
     _token_cookie: str = "token",
     _token_field_name: str = "access_token",
 ):
     @app.route(redirect_suffix, methods=["GET", "POST"])
     def get_token():
-
-        query = urllib.parse.urlparse(request.url).query
-        redirect_params = urllib.parse.parse_qs(query)
-        code = redirect_params["code"][0]
-        state = redirect_params["state"][0]
-        code_verifier = session["cv"]
-
-        headers = token_request_headers
-
-        body = dict(
-            grant_type="authorization_code",
-            code=code,
-            redirect_uri=redirect_uri,
-            code_verifier=code_verifier,
-            client_id=client_id,
-            state=state,
-            client_secret=client_secret,
+        url = request.url
+        
+        body = build_token_body(
+            url=url, redirect_uri=redirect_uri,with_pkce = with_pkce, client_id=client_id
         )
-
-        r = requests.post(external_token_url, data=body, headers=headers)
-        if r.status_code != 200:
-            raise requests.RequestException(
-                f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
-            )
-
+       
+        r = token_request(url,body,token_request_headers)
+        response_data = r.json()
+        
+        token = response_data[_token_field_name]
+        
         response = redirect(_home_suffix)
-        token = r.json()[_token_field_name]
         response.set_cookie(key=_token_cookie, value=token)
 
         return response
 
     return app
+
+def token_request(url : str, body: dict, headers: dict):
+    r = requests.post(url, data=body, headers=headers)
+        
+    if r.status_code != 200:
+        raise requests.RequestException(
+            f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
+        )
+    return r
+    
