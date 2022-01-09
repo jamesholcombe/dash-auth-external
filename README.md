@@ -55,6 +55,7 @@ def example_callback(value):
 - [ ] OAuth1 support 
 - [ ] Full test coverage
 - [ ] Multiple OAuth Providers 
+- [ ] Support for PKCE/ non-PKCE
 
 
 
