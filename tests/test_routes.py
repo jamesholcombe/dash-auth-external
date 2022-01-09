@@ -25,3 +25,21 @@ def test_token_route_raises(mock_post):
 
     with pytest.raises(requests.RequestException):
         response = token_request("Fakeurl", dict(), dict())
+
+
+def test_auth_route_ok():
+    pass
+
+
+def test_auth_route_raises():
+    pass
+
+def test_make_token_body():
+    pass
+
+
+
+
+
+
+
