@@ -49,6 +49,14 @@ def example_callback(value):
     return token
 ```
 
+## Feature Roadmap
+
+- [x] OAuth2 support
+- [ ] OAuth1 support 
+- [ ] Full test coverage
+- [ ] Multiple OAuth Providers 
+
+
 
 
 
