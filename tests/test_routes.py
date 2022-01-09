@@ -1,3 +1,4 @@
+from .test_context import dash_auth_external
 from unittest import mock
 import pytest
 import requests

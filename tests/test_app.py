@@ -4,7 +4,7 @@ import pytest
 from unittest.mock import Mock, patch
 import unittest
 from flask import request
-from test_config import *
+from .test_config import *
 
 """Module for integation tests
 """
