@@ -1,6 +1,6 @@
 # dash-auth-external
 
- Integrate your dashboards with 3rd parties and external providers. 
+ Integrate your dashboards with 3rd parties and external OAuth providers. 
 
 ## Overview
 
@@ -11,11 +11,11 @@ Do you want to build a Plotly Dash app which pulls user data from Google, Spotif
 ## Installation
 **Dash-auth-external** is distributed via [PyPi](https://pypi.org/project/dash-auth-external/)
 
-``` 
+```
 pip install dash-auth-external
 ```
 ## Simple Usage
-```
+```python
 #using spotify as an example
 AUTH_URL = "https://accounts.spotify.com/authorize"
 TOKEN_URL = "https://accounts.spotify.com/api/token"
@@ -25,14 +25,13 @@ CLIENT_ID = "YOUR_CLIENT_ID"
 auth = DashAuthExternal(AUTH_URL, TOKEN_URL, CLIENT_ID)
 ```
 We then pass the flask server from this object to dash on init.
-```
+```python
 app = Dash(__name__, server= auth.server)
 ```
 That's it! You can now define your layout and callbacks as usual. 
 > To obtain your access token, call the get_token method of your Auth object.
 > **NOTE** This can **ONLY** be done in the context of a dash callback.
-```
-
+```python
 app.layout = html.Div(
 [
 html.Div(id="example-output"), 
@@ -49,6 +48,15 @@ def example_callback(value):
     )  ##The token can only be retrieved in the context of a dash callback
     return token
 ```
+
+## Feature Roadmap
+
+- [x] OAuth2 support
+- [ ] OAuth1 support 
+- [ ] Full test coverage
+- [ ] Multiple OAuth Providers 
+- [ ] Support for PKCE/ non-PKCE
+
 
 
 
