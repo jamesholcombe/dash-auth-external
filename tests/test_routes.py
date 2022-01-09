@@ -1,11 +1,13 @@
 from unittest import mock
 import pytest
 import requests
+from werkzeug.wrappers import request
+from dash_auth_external.auth import DashAuthExternal
 from dash_auth_external.routes import token_request
+import flask
 
-"""Module for tests
+"""Module for unit tests
 """
-
 
 @mock.patch('dash_auth_external.routes.requests.post')
 def test_token_route_ok(mock_post):
@@ -22,7 +24,8 @@ def test_token_route_raises(mock_post):
         response = token_request("Fakeurl",dict(),dict())
 
 
-    
+
+
 
     
     

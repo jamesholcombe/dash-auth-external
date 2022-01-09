@@ -95,29 +95,29 @@ def make_access_token_route(
     _home_suffix: str,
     redirect_uri: str,
     client_id: str,
+    _token_field_name: str,
     with_pkce: bool = True,
     client_secret: str = None,
     token_request_headers: dict = None,
-    
-    _token_cookie: str = "token",
-    _token_field_name: str = "access_token",
+
 ):
+    
+    
+    
     @app.route(redirect_suffix, methods=["GET", "POST"])
     def get_token():
         url = request.url
-        
         body = build_token_body(
             url=url, redirect_uri=redirect_uri,with_pkce = with_pkce, client_id=client_id
         )
        
-        r = token_request(url,body,token_request_headers)
-        response_data = r.json()
+       
         
+        response_data = get_token_response_data(external_token_url,body,token_request_headers)
         token = response_data[_token_field_name]
         
         response = redirect(_home_suffix)
-        response.set_cookie(key=_token_cookie, value=token)
-
+        response.headers = {_token_field_name : token}
         return response
 
     return app
@@ -130,4 +130,10 @@ def token_request(url : str, body: dict, headers: dict):
             f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
         )
     return r
+
+def get_token_response_data(*args):
+    r = token_request(*args)
+    return r.json()
+
+
     

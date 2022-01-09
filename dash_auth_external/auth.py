@@ -8,7 +8,7 @@ import os
 
 class DashAuthExternal:
     @staticmethod
-    def generate_secret_key(length: int = 24):
+    def generate_secret_key(length: int = 24) -> str:
         """Generates a secret key for flask app.
 
         Returns:
@@ -16,19 +16,22 @@ class DashAuthExternal:
         """
         return os.urandom(length)
 
-    def get_token(self):
+    def get_token(self) -> str:
         """Retrieves the access token from flask request headers, using the token cookie given on __init__.
 
         Returns:
             str: Bearer Access token from your OAuth2 Provider
         """
+        token = flask.request.headers.get(self._token_field_name)
+        if token is None:
+            raise KeyError(f"Header with name {self._token_field_name} not found in the flask request headers.")
+        return token
+        
 
-        try:
-            return flask.request.cookies.get(self._token_cookie)
-        except RuntimeError:
-            raise ValueError(
-                "This method must be called in a callback as it makes use of the flask request context."
-            )
+        # except RuntimeError:
+        #     raise ValueError(
+        #         "This method must be called in a callback as it makes use of the flask request context."
+        #     )
 
     def __init__(
         self,
@@ -40,7 +43,7 @@ class DashAuthExternal:
         redirect_suffix: str = "/redirect",
         auth_suffix: str = "/",
         home_suffix="/home",
-        _token_cookie: str = "token",
+        _token_field_name : str = "access_token",
         client_secret: str = None,
         _secret_key: str = None,
         auth_request_headers: dict = None,
@@ -70,7 +73,6 @@ class DashAuthExternal:
         """
         app = Flask(__name__, instance_relative_config=False)
 
-        self._token_cookie = _token_cookie
 
         if _secret_key is None:
             app.secret_key = self.generate_secret_key()
@@ -99,6 +101,11 @@ class DashAuthExternal:
             redirect_suffix=redirect_suffix,
             _home_suffix=home_suffix,
             token_request_headers=token_request_headers,
+            _token_field_name = _token_field_name
         )
 
         self.server = app
+        self.home_suffix = home_suffix
+        self.redirect_suffix = redirect_suffix
+        self.auth_suffix = auth_suffix 
+        self._token_field_name = _token_field_name
