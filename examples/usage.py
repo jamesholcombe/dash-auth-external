@@ -1,7 +1,7 @@
 from dash_auth_external import DashAuthExternal
 from dash import Dash, Input, Output, html, dcc
 
-#using spotify as an example
+# using spotify as an example
 AUTH_URL = "https://accounts.spotify.com/authorize"
 TOKEN_URL = "https://accounts.spotify.com/api/token"
 CLIENT_ID = "YOUR_CLIENT_ID"
@@ -25,6 +25,7 @@ def example_callback(value):
         auth.get_token()
     )  ##The token can only be retrieved in the context of a dash callback
     return token
+
 
 if __name__ == "__main__":
     app.run_server()

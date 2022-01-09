@@ -24,9 +24,10 @@ class DashAuthExternal:
         """
         token = flask.request.headers.get(self._token_field_name)
         if token is None:
-            raise KeyError(f"Header with name {self._token_field_name} not found in the flask request headers.")
+            raise KeyError(
+                f"Header with name {self._token_field_name} not found in the flask request headers."
+            )
         return token
-        
 
         # except RuntimeError:
         #     raise ValueError(
@@ -43,7 +44,7 @@ class DashAuthExternal:
         redirect_suffix: str = "/redirect",
         auth_suffix: str = "/",
         home_suffix="/home",
-        _token_field_name : str = "access_token",
+        _token_field_name: str = "access_token",
         client_secret: str = None,
         _secret_key: str = None,
         auth_request_headers: dict = None,
@@ -73,7 +74,6 @@ class DashAuthExternal:
         """
         app = Flask(__name__, instance_relative_config=False)
 
-
         if _secret_key is None:
             app.secret_key = self.generate_secret_key()
         else:
@@ -101,11 +101,11 @@ class DashAuthExternal:
             redirect_suffix=redirect_suffix,
             _home_suffix=home_suffix,
             token_request_headers=token_request_headers,
-            _token_field_name = _token_field_name
+            _token_field_name=_token_field_name,
         )
 
         self.server = app
         self.home_suffix = home_suffix
         self.redirect_suffix = redirect_suffix
-        self.auth_suffix = auth_suffix 
+        self.auth_suffix = auth_suffix
         self._token_field_name = _token_field_name

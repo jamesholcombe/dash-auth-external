@@ -69,13 +69,12 @@ def build_token_body(
     client_id: str,
     with_pkce: bool = True,
     client_secret: str = None,
-    
 ):
     query = urllib.parse.urlparse(url).query
     redirect_params = urllib.parse.parse_qs(query)
     code = redirect_params["code"][0]
     state = redirect_params["state"][0]
-    code_verifier = session["cv"] 
+    code_verifier = session["cv"]
 
     body = dict(
         grant_type="authorization_code",
@@ -88,6 +87,7 @@ def build_token_body(
     )
     return body
 
+
 def make_access_token_route(
     app: Flask,
     external_token_url: str,
@@ -99,41 +99,36 @@ def make_access_token_route(
     with_pkce: bool = True,
     client_secret: str = None,
     token_request_headers: dict = None,
-
 ):
-    
-    
-    
     @app.route(redirect_suffix, methods=["GET", "POST"])
     def get_token():
         url = request.url
         body = build_token_body(
-            url=url, redirect_uri=redirect_uri,with_pkce = with_pkce, client_id=client_id
+            url=url, redirect_uri=redirect_uri, with_pkce=with_pkce, client_id=client_id
         )
-       
-       
-        
-        response_data = get_token_response_data(external_token_url,body,token_request_headers)
+
+        response_data = get_token_response_data(
+            external_token_url, body, token_request_headers
+        )
         token = response_data[_token_field_name]
-        
+
         response = redirect(_home_suffix)
-        response.headers = {_token_field_name : token}
+        response.headers = {_token_field_name: token}
         return response
 
     return app
 
-def token_request(url : str, body: dict, headers: dict):
+
+def token_request(url: str, body: dict, headers: dict):
     r = requests.post(url, data=body, headers=headers)
-        
+
     if r.status_code != 200:
         raise requests.RequestException(
             f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
         )
     return r
 
+
 def get_token_response_data(*args):
     r = token_request(*args)
     return r.json()
-
-
-    

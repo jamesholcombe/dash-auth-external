@@ -14,12 +14,12 @@ from tests.test_config import *
 @patch("dash_auth_external.routes.build_token_body")
 @patch("dash_auth_external.routes.get_token_response_data")
 def test_get_token(mock_post, mock_body):
-    auth = DashAuthExternal(EXTERNAL_AUTH_URL,EXERNAL_TOKEN_URL,CLIENT_ID)
+    auth = DashAuthExternal(EXTERNAL_AUTH_URL, EXERNAL_TOKEN_URL, CLIENT_ID)
     app = auth.server
-    
-    mock_post.return_value = {auth._token_field_name : "ey.asdfasdfasfd"}
+
+    mock_post.return_value = {auth._token_field_name: "ey.asdfasdfasfd"}
     mock_body.return_value = dict()
-    #mocking the two helper functions called within the view function for the redirect to home suffix.
+    # mocking the two helper functions called within the view function for the redirect to home suffix.
 
     with app.test_client() as client:
         response = client.get(auth.redirect_suffix)
@@ -27,37 +27,4 @@ def test_get_token(mock_post, mock_body):
         mock_post.assert_called_once()
         mock_body.assert_called_once()
 
-        assert auth._token_field_name in response.headers 
-        
-        
-        
-
-        
-        
-        
-
-     
-        
-        
-
-
-
-
-
-
-
-
-
-
-
-        
-
-
-
-
-
-
-
-
-
-
+        assert auth._token_field_name in response.headers
