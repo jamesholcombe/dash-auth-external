@@ -1,3 +1,5 @@
+![build](https://github.com/jamesholcombe/dash-auth-external/blob/master/.github/workflows/python-package.yml/badge.svg)
+
 # dash-auth-external
 
  Integrate your dashboards with 3rd parties and external OAuth providers. 
