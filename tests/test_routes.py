@@ -34,12 +34,6 @@ def test_auth_route_ok():
 def test_auth_route_raises():
     pass
 
+
 def test_make_token_body():
     pass
-
-
-
-
-
-
-
