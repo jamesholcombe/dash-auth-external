@@ -48,15 +48,23 @@ def make_auth_route(
             client_id,
             redirect_uri=redirect_uri,
             scope=scope,
+            
         )
-        authorization_url, state = oauth_session.authorization_url(
-            external_auth_url,
-            code_challenge=code_challenge,
-            code_challenge_method="S256",
-        )
-        # State is used to prevent CSRF, keep this for later.
-        session["oauth_state"] = state
 
+        if with_pkce:
+        
+            authorization_url, state = oauth_session.authorization_url(
+                external_auth_url,
+                code_challenge=code_challenge,
+                code_challenge_method="S256",
+            )
+        else:
+             authorization_url, state = oauth_session.authorization_url(
+                external_auth_url,
+              
+            )
+
+    
         resp = redirect(authorization_url)
         return resp
 
@@ -67,24 +75,33 @@ def build_token_body(
     url,
     redirect_uri: str,
     client_id: str,
-    with_pkce: bool = True,
-    client_secret: str = None,
+    with_pkce: bool,
+    client_secret: str 
 ):
     query = urllib.parse.urlparse(url).query
     redirect_params = urllib.parse.parse_qs(query)
     code = redirect_params["code"][0]
     state = redirect_params["state"][0]
-    code_verifier = session["cv"]
-
-    body = dict(
-        grant_type="authorization_code",
-        code=code,
-        redirect_uri=redirect_uri,
-        code_verifier=code_verifier,
-        client_id=client_id,
-        state=state,
-        client_secret=client_secret,
-    )
+    
+    if with_pkce:
+        code_verifier = session["cv"]
+        body = dict(
+            grant_type="authorization_code",
+            code=code,
+            redirect_uri=redirect_uri,
+            code_verifier=code_verifier,
+            client_id=client_id,
+            state=state,
+            client_secret=client_secret,
+        )
+    else:
+        body = dict(
+            grant_type="authorization_code",
+            code=code,
+            redirect_uri=redirect_uri,
+            client_id=client_id,
+            state=state,
+            client_secret=client_secret,)
     return body
 
 
@@ -104,7 +121,7 @@ def make_access_token_route(
     def get_token():
         url = request.url
         body = build_token_body(
-            url=url, redirect_uri=redirect_uri, with_pkce=with_pkce, client_id=client_id
+            url=url, redirect_uri=redirect_uri, with_pkce=with_pkce, client_id=client_id, client_secret=client_secret
         )
 
         response_data = get_token_response_data(

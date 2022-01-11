@@ -62,7 +62,7 @@ class DashAuthExternal:
             redirect_suffix (str, optional): The route that OAuth2 provider will redirect back to. Defaults to "/redirect".
             auth_suffix (str, optional): The route that will trigger the initial redirect to the external OAuth provider. Defaults to "/".
             home_suffix (str, optional): The route your dash application will sit, relative to your url. Defaults to "/home".
-            _token_cookie (str, optional): The name to save your access token in the flask request cookies. Defaults to "token".
+            _token_field_name (str, optional): The key for the token returned in JSON from the token endpoint. Defaults to "access_token".
             client_secret (str, optional): Client secret if enforced by Oauth2 provider. Defaults to None.
             _secret_key (str, optional): Secret key for flask app, normally generated at runtime. Defaults to None.
             auth_request_headers (dict, optional): Additional headers to send to the authorization endpoint. Defaults to None.
