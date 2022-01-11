@@ -6,7 +6,7 @@ NAME = "dash-auth-external"
 
 setup(
     name=NAME,
-    version="0.2.1",
+    version="0.2.2",
     description="Integrate Dash with 3rd Parties and external providers",
     author_email="jholcombe@hotmail.co.uk",
     url="https://github.com/jamesholcombe/dash-auth-external",
