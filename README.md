@@ -1,4 +1,4 @@
-![build](https://github.com/jamesholcombe/dash-auth-external/blob/master/.github/workflows/python-package.yml/badge.svg)
+![build](https://github.com/jamesholcombe/dash-auth-external/.github/workflows/python-package.yml/badge.svg)
 
 # dash-auth-external
 
