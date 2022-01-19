@@ -1,12 +1,10 @@
-![build](https://github.com/jamesholcombe/dash-auth-external/.github/workflows/python-package.yml/badge.svg)
-
 # dash-auth-external
 
- Integrate your dashboards with 3rd parties and external OAuth providers. 
+ Integrate your dashboards with 3rd party APIs and external OAuth providers. 
 
 ## Overview
 
-Do you want to build a Plotly Dash app which pulls user data from Google, Spotify, Slack etc?
+Do you want to build a Plotly Dash app which pulls user data from external APIs from Google, Spotify, Slack etc?
 
 **Dash-auth-external** provides a simple interface to authenticate users through OAuth2 code flow. Allowing developers to serve user tailored content. 
 
@@ -50,23 +48,26 @@ def example_callback(value):
     )  ##The token can only be retrieved in the context of a dash callback
     return token
 ```
+## Troubleshooting
 
+If you hit 400 responses (bad request) from either endpoint, there are a number of things that might need configuration.
 
+Make sure you have checked the following 
 
+-  **Register your redirect URI** with OAuth provider! 
 
+*The library uses a default redirect URI of http://127.0.0.1:8050/redirect*.
 
+- Check whether your OAuth provider requires a client secret as well as a client id. 
 
-
-
-
+*This can be passed as a keyword argument to the main class.*
 
 ## Feature Roadmap
 
 - [x] OAuth2 support
 - [ ] OAuth1 support 
 - [ ] Full test coverage
-- [ ] Multiple OAuth Providers 
-- [ ] Support for PKCE/ non-PKCE
+- [x] Support for PKCE/ non-PKCE
 
 
 
