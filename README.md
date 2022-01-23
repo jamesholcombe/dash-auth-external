@@ -62,6 +62,11 @@ Make sure you have checked the following
 
 *This can be passed as a keyword argument to the main class.*
 
+- Check the **key field** for the **token** in the JSON response returned by the token endpoint by your OAuth provider.
+
+*The default is "access_token" but different OAuth providers will use a different key for this.*
+
+
 ## Feature Roadmap
 
 - [x] OAuth2 support
