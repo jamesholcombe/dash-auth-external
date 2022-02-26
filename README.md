@@ -71,7 +71,7 @@ Make sure you have checked the following
 
 - [x] OAuth2 support
 - [ ] OAuth1 support 
-- [ ] Full test coverage
+- [x] Full test coverage
 - [x] Support for PKCE/ non-PKCE
 
 
