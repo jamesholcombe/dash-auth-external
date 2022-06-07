@@ -128,7 +128,7 @@ def make_access_token_route(
         token = response_data[_token_field_name]
 
         response = redirect(_home_suffix)
-        response.headers = {_token_field_name: token}
+        response.headers.add(_token_field_name, token)
         return response
 
     return app
