@@ -1,15 +1,20 @@
 from flask import session, redirect, request
 import os
+from os import environ
 import base64
 import re
 import urllib.parse
 from flask.app import Flask
+import flask
 import requests
 import hashlib
 from requests_oauthlib import OAuth2Session
+from cryptography.fernet import Fernet
+from ua_parser import user_agent_parser
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
+ 
 
 def make_code_challenge(length: int = 40):
     code_verifier = base64.urlsafe_b64encode(os.urandom(length)).decode("utf-8")
@@ -25,7 +30,7 @@ def make_auth_route(
     external_auth_url: str,
     client_id: str,
     auth_suffix: str,
-    redirect_uri: str,
+    redirect_uri: str, 
     with_pkce: bool = True,
     client_secret: str = None,
     scope: str = None,
@@ -127,11 +132,51 @@ def make_access_token_route(
         )
         token = response_data[_token_field_name]
 
+        if(os.environ.get('pkey') is None or os.environ.get('pkey') == ''):
+            key =  Fernet.generate_key()
+            os.environ['pkey'] = key.decode()
+
+
+        key = os.environ['pkey'].encode()
+        token = str(token).encode()
+        token = Fernet(key).encrypt(token)
+
+
         response = redirect(_home_suffix)
         response.headers.add(_token_field_name, token)
-        return response
+        set_cookie(
+            response=response,
+            name= _token_field_name,
+            value= token,
+            max_age=None
+        )
 
+
+        return response
     return app
+
+
+def set_cookie(response, name, value, max_age,
+                   httponly=True, samesite='Strict'):
+
+        is_http = flask.request.environ.get(
+            'wsgi.url_scheme',
+            flask.request.environ.get('HTTP_X_FORWARDED_PROTO', 'http')
+        ) == 'http'
+
+        ua = user_agent_parser.ParseUserAgent(
+            flask.request.environ.get('HTTP_USER_AGENT', ''))
+
+
+
+        response.set_cookie(
+            name,
+            value=value,
+            max_age=max_age,
+            httponly=httponly,
+            samesite=samesite
+        )
+
 
 
 def token_request(url: str, body: dict, headers: dict):

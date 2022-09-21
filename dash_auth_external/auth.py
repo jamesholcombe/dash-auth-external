@@ -1,7 +1,7 @@
 from flask import Flask
 import flask
 from werkzeug.routing import RoutingException, ValidationError
-from .routes import make_access_token_route, make_auth_route
+from .routes import *
 from urllib.parse import urljoin
 import os
 
@@ -22,7 +22,8 @@ class DashAuthExternal:
         Returns:
             str: Bearer Access token from your OAuth2 Provider
         """
-        token = flask.request.headers.get(self._token_field_name)
+        # token = flask.request.headers.get(self._token_field_name)
+        token =  flask.request.cookies['access_token']
         if token is None:
             raise KeyError(
                 f"Header with name {self._token_field_name} not found in the flask request headers."

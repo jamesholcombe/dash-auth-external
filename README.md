@@ -82,4 +82,10 @@ Make sure you have checked the following
 
 
 
+## Encrypted Token Usage
+
+The token will be stored in the HTTP header. The token is encrypted using Fernet symmetric encryption.
+You can find out more about Fernet here: https://cryptography.io/en/latest/fernet/.
+The token is stored in the header as an encrypted key. The encryption method uses a private key which is generated on the first execution of the method. 
+To use the stored token decrypt the token using the private key stored in the enviorment variable "pkey".
 
