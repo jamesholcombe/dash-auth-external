@@ -6,7 +6,11 @@ NAME = "dash-auth-external"
 
 this_directory = Path(__file__).parent
 long_description = (this_directory / "README.md").read_text()
-requires = (this_directory / "requirements.txt").read_text().splitlines()
+requires = [
+"dash >= 2.0.0",
+"requests >= 1.0.0",
+"requests-oauthlib >= 0.3.0
+]
 
 setup(
     name=NAME,
