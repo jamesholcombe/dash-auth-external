@@ -4,13 +4,12 @@ import pytest
 from unittest.mock import Mock, patch
 import unittest
 from flask import request
-from .test_config import *
+from .test_config import EXERNAL_TOKEN_URL, EXTERNAL_AUTH_URL, CLIENT_ID
 
 """Module for integation tests
 """
 
 
-##this is the least intuitive thing in the world. Patches have to be opposite way round you would expect.
 @patch("dash_auth_external.routes.build_token_body")
 @patch("dash_auth_external.routes.get_token_response_data")
 def test_get_token(mock_post, mock_body):
