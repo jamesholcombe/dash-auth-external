@@ -59,9 +59,6 @@ class RefreshAuth:
 
             # Trigger the automatic refresh
             jsonify(api.get(keycloack_userinfo_url).json())
-            print('refresh token data')
-            print(session['token_data'])
-            print('_________')
             self._token_field_name = _token_field_name
 
             return
