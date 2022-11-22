@@ -75,11 +75,8 @@ Make sure you have checked the following
 - [x] Support for PKCE/ non-PKCE
 
 
-
-
-
-
-
+## Reauth method
+To use the token refresh method import reauth.py into your project and call the RefreshAuth class with the necessary parameters when you want to refresh the token. If you are using the token encryption methods be sure to encrypt and decrypt tokens where required. 
 
 
 ## Encrypted Token Usage

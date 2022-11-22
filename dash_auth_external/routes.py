@@ -9,12 +9,19 @@ import flask
 import requests
 import hashlib
 from requests_oauthlib import OAuth2Session
-from cryptography.fernet import Fernet
+from flask.json import jsonify
 from ua_parser import user_agent_parser
+from time import time
+from .encrypt import *
+
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
-
- 
+# Uncomment for detailed oauthlib logs
+import logging
+import sys
+log = logging.getLogger('oauthlib')
+log.addHandler(logging.StreamHandler(sys.stdout))
+log.setLevel(logging.DEBUG)
 
 def make_code_challenge(length: int = 40):
     code_verifier = base64.urlsafe_b64encode(os.urandom(length)).decode("utf-8")
@@ -52,7 +59,7 @@ def make_auth_route(
         oauth_session = OAuth2Session(
             client_id,
             redirect_uri=redirect_uri,
-            scope=scope,
+            scope=scope
         )
 
         if with_pkce:
@@ -114,6 +121,8 @@ def make_access_token_route(
     _token_field_name: str,
     with_pkce: bool = True,
     client_secret: str = None,
+    keycloak_userinfo_url : str = None,
+    refresh_suffix: str = None,
     token_request_headers: dict = None,
 ):
     @app.route(redirect_suffix, methods=["GET", "POST"])
@@ -126,35 +135,29 @@ def make_access_token_route(
             client_id=client_id,
             client_secret=client_secret,
         )
+        body['access_type'] = 'offline'
+
 
         response_data = get_token_response_data(
             external_token_url, body, token_request_headers
         )
         token = response_data[_token_field_name]
+        token = TokenCrypt.encrypt_token(token)
+        response_data[_token_field_name]  = token
 
-        if(os.environ.get('pkey') is None or os.environ.get('pkey') == ''):
-            key =  Fernet.generate_key()
-            os.environ['pkey'] = key.decode()
-
-
-        key = os.environ['pkey'].encode()
-        token = str(token).encode()
-        token = Fernet(key).encrypt(token)
-
+        session['token_data'] = response_data
 
         response = redirect(_home_suffix)
         response.headers.add(_token_field_name, token)
+
         set_cookie(
             response=response,
             name= _token_field_name,
             value= token,
             max_age=None
         )
-
-
         return response
     return app
-
 
 def set_cookie(response, name, value, max_age,
                    httponly=True, samesite='Strict'):
@@ -176,7 +179,6 @@ def set_cookie(response, name, value, max_age,
             httponly=httponly,
             samesite=samesite
         )
-
 
 
 def token_request(url: str, body: dict, headers: dict):
