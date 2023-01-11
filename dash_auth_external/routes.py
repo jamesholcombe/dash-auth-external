@@ -65,7 +65,7 @@ def make_auth_route(
 
 
 def build_token_body(
-    url: str, redirect_uri: str, client_id: str, with_pkce: bool, client_secret: str
+        url: str, redirect_uri: str, client_id: str, with_pkce: bool
 ):
     query = urllib.parse.urlparse(url).query
     redirect_params = urllib.parse.parse_qs(query)
