@@ -41,7 +41,7 @@ class DashAuthExternal:
         home_suffix="/home",
         _token_field_name: str = "access_token",
         _secret_key: str = None,
-        auth_request_headers: dict = {},
+        auth_request_headers: dict = None,
         token_request_headers: dict = None,
         scope: str = None,
     ):
@@ -58,7 +58,7 @@ class DashAuthExternal:
             home_suffix (str, optional): The route your dash application will sit, relative to your url. Defaults to "/home".
             _token_field_name (str, optional): The key for the token returned in JSON from the token endpoint. Defaults to "access_token".
             _secret_key (str, optional): Secret key for flask app, normally generated at runtime. Defaults to None.
-            auth_request_headers (dict, optional): Additional params to send to the authorization endpoint. Defaults to {}.
+            auth_request_headers (dict, optional): Additional params to send to the authorization endpoint. Defaults to None.
             token_request_headers (dict, optional): Additional headers to send to the access token endpoint. Defaults to None.
             scope (str, optional): Header required by most Oauth2 Providers. Defaults to None.
 
