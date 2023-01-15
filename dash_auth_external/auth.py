@@ -1,9 +1,13 @@
 from flask import Flask
 import flask
 from werkzeug.routing import RoutingException, ValidationError
-from .routes import make_access_token_route, make_auth_route
+from .routes import make_access_token_route, make_auth_route, refresh_token
 from urllib.parse import urljoin
 import os
+from dash_auth_external.token import OAuth2Token
+from dash_auth_external.config import FLASK_HEADER_TOKEN_KEY
+from dash_auth_external.exceptions import TokenExpiredError
+import json
 
 
 class DashAuthExternal:
@@ -17,17 +21,38 @@ class DashAuthExternal:
         return os.urandom(length)
 
     def get_token(self) -> str:
-        """Retrieves the access token from flask request headers, using the token cookie given on __init__.
+        """Attempts to get a valid access token.
 
         Returns:
             str: Bearer Access token from your OAuth2 Provider
         """
-        token = flask.request.headers.get(self._token_field_name)
-        if token is None:
-            raise KeyError(
-                f"Header with name {self._token_field_name} not found in the flask request headers."
+
+        if self.token_data is not None:
+            if not self.token_data.is_expired():
+                return self.token_data.access_token
+
+            if not self.token_data.refresh_token:
+                raise TokenExpiredError(
+                    "Token is expired and no refresh token available to refresh token."
+                )
+
+            self.token_data = refresh_token(
+                self.external_token_url, self.token_data, self.token_request_headers
             )
-        return token
+            return self.token_data.access_token
+
+        token_data = flask.request.headers.get(FLASK_HEADER_TOKEN_KEY)
+        token_data = json.loads(token_data)
+        if token_data is None:
+            raise ValueError("No token found in request headers.")
+        self.token_data = OAuth2Token(
+            access_token=token_data["access_token"],
+            refresh_token=token_data.get("refresh_token"),
+            expires_in=token_data.get("expires_in"),
+            token_type=token_data.get("token_type"),
+        )
+
+        return self.token_data.access_token
 
     def __init__(
         self,
@@ -71,6 +96,9 @@ class DashAuthExternal:
         Returns:
            DashAuthExternal: Main package class
         """
+
+        self.token_data: OAuth2Token = None
+
         app = Flask(
             _server_name,
             instance_relative_config=False,
@@ -112,3 +140,6 @@ class DashAuthExternal:
         self.redirect_suffix = redirect_suffix
         self.auth_suffix = auth_suffix
         self._token_field_name = _token_field_name
+        self.client_id = client_id
+        self.external_token_url = external_token_url
+        self.token_request_headers = token_request_headers

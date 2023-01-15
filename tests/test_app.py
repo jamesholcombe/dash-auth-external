@@ -5,6 +5,7 @@ from unittest.mock import Mock, patch
 import unittest
 from flask import request
 from .test_config import EXERNAL_TOKEN_URL, EXTERNAL_AUTH_URL, CLIENT_ID
+from pytest_mock import mocker
 
 """Module for integation tests
 """
@@ -18,6 +19,7 @@ def test_get_token(mock_post, mock_body):
 
     mock_post.return_value = {auth._token_field_name: "ey.asdfasdfasfd"}
     mock_body.return_value = dict()
+
     # mocking the two helper functions called within the view function for the redirect to home suffix.
 
     with app.test_client() as client:
