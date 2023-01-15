@@ -44,6 +44,8 @@ class DashAuthExternal:
         auth_request_headers: dict = None,
         token_request_headers: dict = None,
         scope: str = None,
+        _server_name: str = __name__,
+        _static_folder: str = './assets/'
     ):
         """The interface for obtaining access tokens from 3rd party OAuth2 Providers.
 
@@ -61,11 +63,13 @@ class DashAuthExternal:
             auth_request_headers (dict, optional): Additional params to send to the authorization endpoint. Defaults to None.
             token_request_headers (dict, optional): Additional headers to send to the access token endpoint. Defaults to None.
             scope (str, optional): Header required by most Oauth2 Providers. Defaults to None.
+            _server_name (str, optional): The name of the Flask Server. Defaults to __name__, so the name of this library.
+            _static_folder (str, optional): The folder with static assets. Defaults to "./assets/".
 
         Returns:
            DashAuthExternal: Main package class
         """
-        app = Flask(__name__, instance_relative_config=False)
+        app = Flask(_server_name, instance_relative_config=False, static_folder=_static_folder)
 
         if _secret_key is None:
             app.secret_key = self.generate_secret_key()
