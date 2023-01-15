@@ -8,11 +8,15 @@ import requests
 import hashlib
 from requests_oauthlib import OAuth2Session
 
+from dash_auth_external.config import FLASK_HEADER_TOKEN_KEY
+from dash_auth_external.token import OAuth2Token
+
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 def make_code_challenge(length: int = 40):
-    code_verifier = base64.urlsafe_b64encode(os.urandom(length)).decode("utf-8")
+    code_verifier = base64.urlsafe_b64encode(
+        os.urandom(length)).decode("utf-8")
     code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
     code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
     code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
@@ -41,6 +45,8 @@ def make_auth_route(
             redirect_uri=redirect_uri,
             scope=scope,
         )
+
+        print("with_pkce", with_pkce)
 
         if with_pkce:
             code_challenge, code_verifier = make_code_challenge()
@@ -104,13 +110,15 @@ def make_access_token_route(
             client_id=client_id,
         )
 
-        response_data = get_token_response_data(
-            external_token_url, body, token_request_headers
-        )
+        response_data = token_request(
+            url=external_token_url,
+            body=body,
+            headers=token_request_headers,
+        ).json()
         token = response_data[_token_field_name]
 
         response = redirect(_home_suffix)
-        response.headers.add(_token_field_name, token)
+        response.headers.add(FLASK_HEADER_TOKEN_KEY, token)
         return response
 
     return app
@@ -126,6 +134,22 @@ def token_request(url: str, body: dict, headers: dict):
     return r
 
 
-def get_token_response_data(*args):
-    r = token_request(*args)
-    return r.json()
+def refresh_token(url: str, token_data: OAuth2Token, headers: dict) -> OAuth2Token:
+
+    body = {
+        "grant_type": "refresh_token",
+        "refresh_token": token_data.refresh_token,
+    }
+    r = token_request(url, body, headers)
+    r.raise_for_status()
+    data = r.json()
+    token_data.access_token = data["access_token"]
+
+    # If the provider does not return a new refresh token, use the old one.
+    if "refresh_token" in data:
+        token_data.refresh_token = data["refresh_token"]
+
+    if "expires_in" in data:
+        token_data.expires_in = data["expires_in"]
+
+    return token_data
