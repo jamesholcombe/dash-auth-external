@@ -12,8 +12,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 def make_code_challenge(length: int = 40):
-    code_verifier = base64.urlsafe_b64encode(
-        os.urandom(length)).decode("utf-8")
+    code_verifier = base64.urlsafe_b64encode(os.urandom(length)).decode("utf-8")
     code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
     code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
     code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")
@@ -27,9 +26,9 @@ def make_auth_route(
     client_id: str,
     auth_suffix: str,
     redirect_uri: str,
-    with_pkce: bool = True,
-    scope: str = None,
-    auth_request_params: dict = None,
+    with_pkce: bool,
+    scope: str,
+    auth_request_params: dict,
 ):
     @app.route(auth_suffix)
     def get_auth_code():
@@ -64,9 +63,7 @@ def make_auth_route(
     return app
 
 
-def build_token_body(
-        url: str, redirect_uri: str, client_id: str, with_pkce: bool
-):
+def build_token_body(url: str, redirect_uri: str, client_id: str, with_pkce: bool):
     query = urllib.parse.urlparse(url).query
     redirect_params = urllib.parse.parse_qs(query)
     code = redirect_params["code"][0]
@@ -94,8 +91,8 @@ def make_access_token_route(
     redirect_uri: str,
     client_id: str,
     _token_field_name: str,
-    with_pkce: bool = True,
-    token_request_headers: dict = None,
+    with_pkce: bool,
+    token_request_headers: dict,
 ):
     @app.route(redirect_suffix, methods=["GET", "POST"])
     def get_token():
@@ -105,7 +102,6 @@ def make_access_token_route(
             redirect_uri=redirect_uri,
             with_pkce=with_pkce,
             client_id=client_id,
-
         )
 
         response_data = get_token_response_data(
