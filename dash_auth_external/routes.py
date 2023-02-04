@@ -7,9 +7,8 @@ from flask.app import Flask
 import requests
 import hashlib
 from requests_oauthlib import OAuth2Session
+from dash_auth_external.config import FLASK_SESSION_TOKEN_KEY
 
-from dash_auth_external.config import FLASK_HEADER_TOKEN_KEY
-from dash_auth_external.token import OAuth2Token
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -45,8 +44,6 @@ def make_auth_route(
             redirect_uri=redirect_uri,
             scope=scope,
         )
-
-        print("with_pkce", with_pkce)
 
         if with_pkce:
             code_challenge, code_verifier = make_code_challenge()
@@ -101,7 +98,7 @@ def make_access_token_route(
     token_request_headers: dict,
 ):
     @app.route(redirect_suffix, methods=["GET", "POST"])
-    def get_token():
+    def get_token_route():
         url = request.url
         body = build_token_body(
             url=url,
@@ -114,11 +111,10 @@ def make_access_token_route(
             url=external_token_url,
             body=body,
             headers=token_request_headers,
-        ).json()
-        token = response_data[_token_field_name]
+        )
 
         response = redirect(_home_suffix)
-        response.headers.add(FLASK_HEADER_TOKEN_KEY, token)
+        session[FLASK_SESSION_TOKEN_KEY] = response_data
         return response
 
     return app
@@ -131,25 +127,4 @@ def token_request(url: str, body: dict, headers: dict):
         raise requests.RequestException(
             f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
         )
-    return r
-
-
-def refresh_token(url: str, token_data: OAuth2Token, headers: dict) -> OAuth2Token:
-
-    body = {
-        "grant_type": "refresh_token",
-        "refresh_token": token_data.refresh_token,
-    }
-    r = token_request(url, body, headers)
-    r.raise_for_status()
-    data = r.json()
-    token_data.access_token = data["access_token"]
-
-    # If the provider does not return a new refresh token, use the old one.
-    if "refresh_token" in data:
-        token_data.refresh_token = data["refresh_token"]
-
-    if "expires_in" in data:
-        token_data.expires_in = data["expires_in"]
-
-    return token_data
+    return r.json()

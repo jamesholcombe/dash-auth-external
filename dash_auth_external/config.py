@@ -1,1 +1,1 @@
-FLASK_HEADER_TOKEN_KEY = "TokenDataDashAuthExternal"
+FLASK_SESSION_TOKEN_KEY = "TokenDataDashAuthExternal"
