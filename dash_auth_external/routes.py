@@ -10,6 +10,9 @@ from requests_oauthlib import OAuth2Session
 from dash_auth_external.config import FLASK_SESSION_TOKEN_KEY
 
 
+from dash_auth_external.config import FLASK_HEADER_TOKEN_KEY
+from dash_auth_external.token import OAuth2Token
+
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 

@@ -3,7 +3,7 @@
 
 from dash_auth_external import DashAuthExternal
 from unittest.mock import Mock
-from dash_auth_external.config import FLASK_HEADER_TOKEN_KEY
+from dash_auth_external.config import FLASK_SESSION_TOKEN_KEY
 from .test_config import EXERNAL_TOKEN_URL, EXTERNAL_AUTH_URL, CLIENT_ID
 from pytest_mock import mocker
 from requests_oauthlib import OAuth2Session
@@ -20,9 +20,11 @@ def test_pkce_true(mocker):
         OAuth2Session(CLIENT_ID, redirect_uri=redirect_uri, scope=auth.scope)
     )
 
-    session_mock.authorization_url.return_value = ("https://example.com", "state")
+    session_mock.authorization_url.return_value = (
+        "https://example.com", "state")
 
-    mocker.patch("dash_auth_external.routes.OAuth2Session", return_value=session_mock)
+    mocker.patch("dash_auth_external.routes.OAuth2Session",
+                 return_value=session_mock)
 
     mocker.patch(
         "dash_auth_external.routes.make_code_challenge",
@@ -58,11 +60,12 @@ def test_pkce_true(mocker):
 
         # now we call the token route with the code and state returned from the authorization_url method
         response = client.get(
-            auth.redirect_suffix, query_string={"code": "code", "state": "state"}
+            auth.redirect_suffix, query_string={
+                "code": "code", "state": "state"}
         )
         assert response.status_code == 302
         with client.session_transaction() as session:
-            token_data = session[FLASK_HEADER_TOKEN_KEY]
+            token_data = session[FLASK_SESSION_TOKEN_KEY]
             assert token_data["access_token"] == "access_token"
             assert token_data["refresh_token"] == "refresh_token"
             assert token_data["token_type"] == "Bearer"
@@ -80,9 +83,11 @@ def test_pkce_false(mocker):
         OAuth2Session(CLIENT_ID, redirect_uri=redirect_uri, scope=auth.scope)
     )
 
-    session_mock.authorization_url.return_value = ("https://example.com", "state")
+    session_mock.authorization_url.return_value = (
+        "https://example.com", "state")
 
-    mocker.patch("dash_auth_external.routes.OAuth2Session", return_value=session_mock)
+    mocker.patch("dash_auth_external.routes.OAuth2Session",
+                 return_value=session_mock)
 
     with app.test_client() as client:
 
@@ -107,11 +112,12 @@ def test_pkce_false(mocker):
 
         # now we call the token route with the code and state returned from the authorization_url method
         response = client.get(
-            auth.redirect_suffix, query_string={"code": "code", "state": "state"}
+            auth.redirect_suffix, query_string={
+                "code": "code", "state": "state"}
         )
         assert response.status_code == 302
         with client.session_transaction() as session:
-            token_data = session[FLASK_HEADER_TOKEN_KEY]
+            token_data = session[FLASK_SESSION_TOKEN_KEY]
             assert token_data["access_token"] == "access_token"
             assert token_data["refresh_token"] == "refresh_token"
             assert token_data["token_type"] == "Bearer"
