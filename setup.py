@@ -12,7 +12,7 @@ requires = ["dash >= 2.0.0", "requests >= 1.0.0", "requests-oauthlib >= 0.3.0"]
 
 setup(
     name=NAME,
-    version="0.2.4",
+    version="0.3.0",
     description="Integrate Dash with 3rd Parties and external providers",
     author_email="jholcombe@hotmail.co.uk",
     url="https://github.com/jamesholcombe/dash-auth-external",
