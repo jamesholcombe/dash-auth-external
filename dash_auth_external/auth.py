@@ -1,9 +1,24 @@
 from flask import Flask
-import flask
-from werkzeug.routing import RoutingException, ValidationError
-from .routes import make_access_token_route, make_auth_route
+from .routes import make_access_token_route, make_auth_route, token_request
 from urllib.parse import urljoin
 import os
+from dash_auth_external.token import OAuth2Token
+from dash_auth_external.config import FLASK_SESSION_TOKEN_KEY
+from dash_auth_external.exceptions import TokenExpiredError
+
+from flask import session
+
+
+def _get_token_data_from_session() -> dict:
+    """Gets the token data from the session.
+
+    Returns:
+        dict: The token data from the session.
+    """
+    token_data = session.get(FLASK_SESSION_TOKEN_KEY)
+    if token_data is None:
+        raise ValueError("No token found in request session.")
+    return token_data
 
 
 class DashAuthExternal:
@@ -17,17 +32,36 @@ class DashAuthExternal:
         return os.urandom(length)
 
     def get_token(self) -> str:
-        """Retrieves the access token from flask request headers, using the token cookie given on __init__.
+        """Attempts to get a valid access token.
 
         Returns:
             str: Bearer Access token from your OAuth2 Provider
         """
-        token = flask.request.headers.get(self._token_field_name)
-        if token is None:
-            raise KeyError(
-                f"Header with name {self._token_field_name} not found in the flask request headers."
+
+        if self.token_data is not None:
+            if not self.token_data.is_expired():
+                return self.token_data.access_token
+
+            if not self.token_data.refresh_token:
+                raise TokenExpiredError(
+                    "Token is expired and no refresh token available to refresh token."
+                )
+
+            self.token_data = refresh_token(
+                self.external_token_url, self.token_data, self.token_request_headers
             )
-        return token
+            return self.token_data.access_token
+
+        token_data = _get_token_data_from_session()
+
+        self.token_data = OAuth2Token(
+            access_token=token_data["access_token"],
+            refresh_token=token_data.get("refresh_token"),
+            expires_in=token_data.get("expires_in"),
+            token_type=token_data.get("token_type"),
+        )
+
+        return self.token_data.access_token
 
     def __init__(
         self,
@@ -39,13 +73,13 @@ class DashAuthExternal:
         redirect_suffix: str = "/redirect",
         auth_suffix: str = "/",
         home_suffix="/home",
+        _flask_server: Flask = None,
         _token_field_name: str = "access_token",
         _secret_key: str = None,
         auth_request_headers: dict = None,
         token_request_headers: dict = None,
         scope: str = None,
         _server_name: str = __name__,
-        _static_folder: str = './assets/'
     ):
         """The interface for obtaining access tokens from 3rd party OAuth2 Providers.
 
@@ -58,18 +92,32 @@ class DashAuthExternal:
             redirect_suffix (str, optional): The route that OAuth2 provider will redirect back to. Defaults to "/redirect".
             auth_suffix (str, optional): The route that will trigger the initial redirect to the external OAuth provider. Defaults to "/".
             home_suffix (str, optional): The route your dash application will sit, relative to your url. Defaults to "/home".
+            _flask_server (Flask, optional): Flask server to use if additional config required. Defaults to None.
             _token_field_name (str, optional): The key for the token returned in JSON from the token endpoint. Defaults to "access_token".
             _secret_key (str, optional): Secret key for flask app, normally generated at runtime. Defaults to None.
-            auth_request_params (dict, optional): Additional params to send to the authorization endpoint. Defaults to None.
+            auth_request_headers (dict, optional): Additional params to send to the authorization endpoint. Defaults to None.
             token_request_headers (dict, optional): Additional headers to send to the access token endpoint. Defaults to None.
             scope (str, optional): Header required by most Oauth2 Providers. Defaults to None.
-            _server_name (str, optional): The name of the Flask Server. Defaults to __name__, so the name of this library.
-            _static_folder (str, optional): The folder with static assets. Defaults to "./assets/".
+            _server_name (str, optional): The name of the Flask Server. Defaults to __name__, ignored if _flask_server is not None.
+
 
         Returns:
            DashAuthExternal: Main package class
         """
-        app = Flask(_server_name, instance_relative_config=False, static_folder=_static_folder)
+
+        self.token_data: OAuth2Token = None
+        if auth_request_headers is None:
+            auth_request_headers = {}
+        if token_request_headers is None:
+            token_request_headers = {}
+
+        if _flask_server is None:
+
+            app = Flask(
+                _server_name, instance_relative_config=False, static_folder="./assets"
+            )
+        else:
+            app = _flask_server
 
         if _secret_key is None:
             app.secret_key = self.generate_secret_key()
@@ -97,6 +145,7 @@ class DashAuthExternal:
             _home_suffix=home_suffix,
             token_request_headers=token_request_headers,
             _token_field_name=_token_field_name,
+            with_pkce=with_pkce,
         )
 
         self.server = app
@@ -104,3 +153,27 @@ class DashAuthExternal:
         self.redirect_suffix = redirect_suffix
         self.auth_suffix = auth_suffix
         self._token_field_name = _token_field_name
+        self.client_id = client_id
+        self.external_token_url = external_token_url
+        self.token_request_headers = token_request_headers
+        self.scope = scope
+
+
+def refresh_token(url: str, token_data: OAuth2Token, headers: dict) -> OAuth2Token:
+
+    body = {
+        "grant_type": "refresh_token",
+        "refresh_token": token_data.refresh_token,
+    }
+    data = token_request(url, body, headers)
+
+    token_data.access_token = data["access_token"]
+
+    # If the provider does not return a new refresh token, use the old one.
+    if "refresh_token" in data:
+        token_data.refresh_token = data["refresh_token"]
+
+    if "expires_in" in data:
+        token_data.expires_in = data["expires_in"]
+
+    return token_data

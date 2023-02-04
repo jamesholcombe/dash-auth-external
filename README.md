@@ -40,6 +40,8 @@ That's it! You can now define your layout and callbacks as usual.
 > **NOTE** This can **ONLY** be done in the context of a dash callback.
 
 ```python
+...
+
 app.layout = html.Div(
 [
 html.Div(id="example-output"),
@@ -51,11 +53,16 @@ Output("example-output", "children"),
 Input("example-input", "value")
 )
 def example_callback(value):
-    token = (
-        auth.get_token()
-    )  ##The token can only be retrieved in the context of a dash callback
+    token = auth.get_token()
+     ##The token can only be retrieved in the context of a dash callback
     return token
 ```
+
+## Refresh Tokens
+
+If your OAuth provider supports refresh tokens, these are automatically checked and handled in the _get_token_ method.
+
+> Check if your OAuth provider requires any additional scopes to support refresh tokens
 
 ## Troubleshooting
 
@@ -67,10 +74,6 @@ Make sure you have checked the following
 
 _The library uses a default redirect URI of http://127.0.0.1:8050/redirect_.
 
-- Check the **key field** for the **token** in the JSON response returned by the token endpoint by your OAuth provider.
-
-_The default is "access_token" but different OAuth providers may use a different key for this._
-
 ## Contributing
 
-Contributions, issues, and ideas are all more than welcome
+Contributions, issues, and ideas are all more than welcome.

@@ -15,7 +15,7 @@ server = (
 
 app = Dash(__name__, server=server)  # instantiating our app using this server
 
-##Below we can define our dash app like normal
+# Below we can define our dash app like normal
 app.layout = html.Div([html.Div(id="example-output"), dcc.Input(id="example-input")])
 
 
@@ -23,7 +23,7 @@ app.layout = html.Div([html.Div(id="example-output"), dcc.Input(id="example-inpu
 def example_callback(value):
     token = (
         auth.get_token()
-    )  ##The token can only be retrieved in the context of a dash callback
+    )  # The token can only be retrieved in the context of a dash callback
     return token
 
 
