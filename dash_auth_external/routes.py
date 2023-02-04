@@ -13,8 +13,7 @@ os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
 
 def make_code_challenge(length: int = 40):
-    code_verifier = base64.urlsafe_b64encode(
-        os.urandom(length)).decode("utf-8")
+    code_verifier = base64.urlsafe_b64encode(os.urandom(length)).decode("utf-8")
     code_verifier = re.sub("[^a-zA-Z0-9]+", "", code_verifier)
     code_challenge = hashlib.sha256(code_verifier.encode("utf-8")).digest()
     code_challenge = base64.urlsafe_b64encode(code_challenge).decode("utf-8")

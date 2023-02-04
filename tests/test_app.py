@@ -20,11 +20,9 @@ def test_pkce_true(mocker):
         OAuth2Session(CLIENT_ID, redirect_uri=redirect_uri, scope=auth.scope)
     )
 
-    session_mock.authorization_url.return_value = (
-        "https://example.com", "state")
+    session_mock.authorization_url.return_value = ("https://example.com", "state")
 
-    mocker.patch("dash_auth_external.routes.OAuth2Session",
-                 return_value=session_mock)
+    mocker.patch("dash_auth_external.routes.OAuth2Session", return_value=session_mock)
 
     mocker.patch(
         "dash_auth_external.routes.make_code_challenge",
@@ -60,8 +58,7 @@ def test_pkce_true(mocker):
 
         # now we call the token route with the code and state returned from the authorization_url method
         response = client.get(
-            auth.redirect_suffix, query_string={
-                "code": "code", "state": "state"}
+            auth.redirect_suffix, query_string={"code": "code", "state": "state"}
         )
         assert response.status_code == 302
         with client.session_transaction() as session:
@@ -83,11 +80,9 @@ def test_pkce_false(mocker):
         OAuth2Session(CLIENT_ID, redirect_uri=redirect_uri, scope=auth.scope)
     )
 
-    session_mock.authorization_url.return_value = (
-        "https://example.com", "state")
+    session_mock.authorization_url.return_value = ("https://example.com", "state")
 
-    mocker.patch("dash_auth_external.routes.OAuth2Session",
-                 return_value=session_mock)
+    mocker.patch("dash_auth_external.routes.OAuth2Session", return_value=session_mock)
 
     with app.test_client() as client:
 
@@ -112,8 +107,7 @@ def test_pkce_false(mocker):
 
         # now we call the token route with the code and state returned from the authorization_url method
         response = client.get(
-            auth.redirect_suffix, query_string={
-                "code": "code", "state": "state"}
+            auth.redirect_suffix, query_string={"code": "code", "state": "state"}
         )
         assert response.status_code == 302
         with client.session_transaction() as session:

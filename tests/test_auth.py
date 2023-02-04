@@ -15,8 +15,7 @@ def dash_app_and_auth():
 
     app = Dash(__name__, server=auth.server)
 
-    app.layout = html.Div(
-        [html.Div(id="test-output"), dcc.Input(id="test-input")])
+    app.layout = html.Div([html.Div(id="test-output"), dcc.Input(id="test-input")])
     return app, auth
 
 
