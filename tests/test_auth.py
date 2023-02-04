@@ -1,6 +1,5 @@
 from dash_auth_external import DashAuthExternal
 from unittest.mock import Mock
-from dash_auth_external.config import FLASK_HEADER_TOKEN_KEY
 from dash_auth_external.exceptions import TokenExpiredError
 from dash_auth_external.token import OAuth2Token
 from .test_config import EXERNAL_TOKEN_URL, EXTERNAL_AUTH_URL, CLIENT_ID
@@ -16,7 +15,8 @@ def dash_app_and_auth():
 
     app = Dash(__name__, server=auth.server)
 
-    app.layout = html.Div([html.Div(id="test-output"), dcc.Input(id="test-input")])
+    app.layout = html.Div(
+        [html.Div(id="test-output"), dcc.Input(id="test-input")])
     return app, auth
 
 
