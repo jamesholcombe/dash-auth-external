@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from flask import session, redirect, request
 import os
 import base64
@@ -8,6 +9,7 @@ import requests
 import hashlib
 from requests_oauthlib import OAuth2Session
 from dash_auth_external.config import FLASK_SESSION_TOKEN_KEY
+from dash_auth_external.token import OAuth2Token
 
 os.environ["OAUTHLIB_INSECURE_TRANSPORT"] = "1"
 
@@ -112,7 +114,9 @@ def make_access_token_route(
         )
 
         response = redirect(_home_suffix)
-        session[FLASK_SESSION_TOKEN_KEY] = response_data
+
+        session[FLASK_SESSION_TOKEN_KEY] = asdict(OAuth2Token(**response_data))
+
         return response
 
     return app
