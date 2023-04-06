@@ -14,6 +14,7 @@ setup(
     name=NAME,
     version="0.3.0",
     description="Integrate Dash with 3rd Parties and external providers",
+    python_requires=">3.7",
     author_email="jholcombe@hotmail.co.uk",
     url="https://github.com/jamesholcombe/dash-auth-external",
     keywords=["Dash", "Plotly", "Authentication", "Auth", "External"],
