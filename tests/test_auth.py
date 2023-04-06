@@ -61,44 +61,24 @@ def test_get_token_first_call(
         token = auth.get_token()
         return token
 
-    assert auth.token_data is None
-    test_callback("test")
-    assert isinstance(auth.token_data, OAuth2Token)
-
-
-def test_get_token_second_call(
-    dash_app_and_auth, mocker, access_token_data_with_refresh
-):
-    dash_app, auth = dash_app_and_auth
-
-    mocker.patch(
-        "dash_auth_external.auth._get_token_data_from_session",
-        return_value=access_token_data_with_refresh,
-    )
-
-    @dash_app.callback(Output("test-output", "children"), Input("test-input", "value"))
-    def test_callback(value):
-        token = auth.get_token()
-        return token
-
-    assert auth.token_data is None
-    test_callback("test")
-    assert isinstance(auth.token_data, OAuth2Token)
-    test_callback("test")
-    assert isinstance(auth.token_data, OAuth2Token)
+    assert test_callback("test") == "access_token"
 
 
 def test_get_token_with_refresh(
     dash_app_and_auth,
     mocker,
     expired_access_token_data_with_refresh,
-    access_token_data_with_refresh,
 ):
     dash_app, auth = dash_app_and_auth
 
+    mocker.patch(
+        "dash_auth_external.auth._get_token_data_from_session",
+        return_value=expired_access_token_data_with_refresh,
+    )
+
     refresh_mock = mocker.patch(
         "dash_auth_external.auth.refresh_token",
-        return_value=OAuth2Token(**access_token_data_with_refresh),
+        return_value=OAuth2Token(**expired_access_token_data_with_refresh),
     )
 
     @dash_app.callback(Output("test-output", "children"), Input("test-input", "value"))
@@ -106,11 +86,14 @@ def test_get_token_with_refresh(
         token = auth.get_token()
         return token
 
-    auth.token_data = OAuth2Token(**expired_access_token_data_with_refresh)
+    # mocking as working out of runtime context
+    mocker.patch(
+        "dash_auth_external.auth._set_token_data_in_session",
+        return_value=expired_access_token_data_with_refresh,
+    )
 
-    test_callback("test")
-    assert isinstance(auth.token_data, OAuth2Token)
-    assert auth.token_data.expires_in > 0
+    assert test_callback("test") == "access_token"
+
     refresh_mock.assert_called_once()
 
 
@@ -128,8 +111,6 @@ def test_expired_token_raises_exception(
     def test_callback(value):
         token = auth.get_token()
         return token
-
-    auth.token_data = OAuth2Token(**expired_access_token_data_without_refresh)
 
     with pytest.raises(TokenExpiredError):
         test_callback("test")

@@ -1,3 +1,4 @@
+from dataclasses import asdict
 from flask import Flask
 from .routes import make_access_token_route, make_auth_route, token_request
 from urllib.parse import urljoin
@@ -21,6 +22,10 @@ def _get_token_data_from_session() -> dict:
     return token_data
 
 
+def _set_token_data_in_session(token: OAuth2Token):
+    session[FLASK_SESSION_TOKEN_KEY] = token
+
+
 class DashAuthExternal:
     @staticmethod
     def generate_secret_key(length: int = 24) -> str:
@@ -37,31 +42,23 @@ class DashAuthExternal:
         Returns:
             str: Bearer Access token from your OAuth2 Provider
         """
-
-        if self.token_data is not None:
-            if not self.token_data.is_expired():
-                return self.token_data.access_token
-
-            if not self.token_data.refresh_token:
-                raise TokenExpiredError(
-                    "Token is expired and no refresh token available to refresh token."
-                )
-
-            self.token_data = refresh_token(
-                self.external_token_url, self.token_data, self.token_request_headers
-            )
-            return self.token_data.access_token
-
         token_data = _get_token_data_from_session()
 
-        self.token_data = OAuth2Token(
-            access_token=token_data["access_token"],
-            refresh_token=token_data.get("refresh_token"),
-            expires_in=token_data.get("expires_in"),
-            token_type=token_data.get("token_type"),
-        )
+        token = OAuth2Token(**token_data)
 
-        return self.token_data.access_token
+        if not token.is_expired():
+            return token.access_token
+
+        if not token.refresh_token:
+            raise TokenExpiredError(
+                "Token is expired and no refresh token available to refresh token."
+            )
+
+        token_data = refresh_token(
+            self.external_token_url, token_data, self.token_request_headers
+        )
+        _set_token_data_in_session(token_data)
+        return token_data.access_token
 
     def __init__(
         self,
@@ -105,7 +102,6 @@ class DashAuthExternal:
            DashAuthExternal: Main package class
         """
 
-        self.token_data: OAuth2Token = None
         if auth_request_headers is None:
             auth_request_headers = {}
         if token_request_headers is None:
