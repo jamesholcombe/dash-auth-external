@@ -65,6 +65,7 @@ class DashAuthExternal:
         external_auth_url: str,
         external_token_url: str,
         client_id: str,
+        client_secret: str = None,
         with_pkce=True,
         app_url: str = "http://127.0.0.1:8050",
         redirect_suffix: str = "/redirect",
@@ -75,6 +76,7 @@ class DashAuthExternal:
         _secret_key: str = None,
         auth_request_headers: dict = None,
         token_request_headers: dict = None,
+        token_body_params: dict = None,
         scope: str = None,
         _server_name: str = __name__,
     ):
@@ -90,10 +92,10 @@ class DashAuthExternal:
             auth_suffix (str, optional): The route that will trigger the initial redirect to the external OAuth provider. Defaults to "/".
             home_suffix (str, optional): The route your dash application will sit, relative to your url. Defaults to "/home".
             _flask_server (Flask, optional): Flask server to use if additional config required. Defaults to None.
-            _token_field_name (str, optional): The key for the token returned in JSON from the token endpoint. Defaults to "access_token".
             _secret_key (str, optional): Secret key for flask app, normally generated at runtime. Defaults to None.
-            auth_request_headers (dict, optional): Additional params to send to the authorization endpoint. Defaults to None.
+            auth_request_headers (dict, optional): Additional headers to send to the authorization endpoint. Defaults to None.
             token_request_headers (dict, optional): Additional headers to send to the access token endpoint. Defaults to None.
+            token_body_params (dict, optional): Additional body params to send to the access token endpoint. Defaults to None.
             scope (str, optional): Header required by most Oauth2 Providers. Defaults to None.
             _server_name (str, optional): The name of the Flask Server. Defaults to __name__, ignored if _flask_server is not None.
 
@@ -108,7 +110,6 @@ class DashAuthExternal:
             token_request_headers = {}
 
         if _flask_server is None:
-
             app = Flask(
                 _server_name, instance_relative_config=False, static_folder="./assets"
             )
@@ -136,11 +137,11 @@ class DashAuthExternal:
             app,
             external_token_url=external_token_url,
             client_id=client_id,
+            client_secret=client_secret,
             redirect_uri=redirect_uri,
             redirect_suffix=redirect_suffix,
             _home_suffix=home_suffix,
             token_request_headers=token_request_headers,
-            _token_field_name=_token_field_name,
             with_pkce=with_pkce,
         )
 
@@ -156,7 +157,6 @@ class DashAuthExternal:
 
 
 def refresh_token(url: str, token_data: OAuth2Token, headers: dict) -> OAuth2Token:
-
     body = {
         "grant_type": "refresh_token",
         "refresh_token": token_data.refresh_token,

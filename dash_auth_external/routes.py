@@ -66,7 +66,9 @@ def make_auth_route(
     return app
 
 
-def build_token_body(url: str, redirect_uri: str, client_id: str, with_pkce: bool):
+def build_token_body(
+    url: str, redirect_uri: str, client_id: str, with_pkce: bool, client_secret: str
+):
     query = urllib.parse.urlparse(url).query
     redirect_params = urllib.parse.parse_qs(query)
     code = redirect_params["code"][0]
@@ -80,8 +82,10 @@ def build_token_body(url: str, redirect_uri: str, client_id: str, with_pkce: boo
     )
 
     if with_pkce:
-
         body["code_verifier"] = session["cv"]
+
+    if client_secret:
+        body["client_secret"] = client_secret
 
     return body
 
@@ -93,7 +97,7 @@ def make_access_token_route(
     _home_suffix: str,
     redirect_uri: str,
     client_id: str,
-    _token_field_name: str,
+    client_secret: str,
     with_pkce: bool,
     token_request_headers: dict,
 ):
@@ -105,6 +109,7 @@ def make_access_token_route(
             redirect_uri=redirect_uri,
             with_pkce=with_pkce,
             client_id=client_id,
+            client_secret=client_secret,
         )
 
         response_data = token_request(
@@ -124,9 +129,5 @@ def make_access_token_route(
 
 def token_request(url: str, body: dict, headers: dict):
     r = requests.post(url, data=body, headers=headers)
-
-    if r.status_code != 200:
-        raise requests.RequestException(
-            f"{r.status_code} {r.reason}:The request to the access token endpoint failed."
-        )
+    r.raise_for_status()
     return r.json()
