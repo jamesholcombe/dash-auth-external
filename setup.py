@@ -12,8 +12,8 @@ requires = ["dash >= 2.0.0", "requests >= 1.0.0", "requests-oauthlib >= 0.3.0"]
 
 setup(
     name=NAME,
-    version="1.0.1",
-    description="Integrate Dash with 3rd Parties and external providers",
+    version="1.1.0",
+    description=long_description,
     python_requires=">=3.7",
     author_email="jholcombe@hotmail.co.uk",
     url="https://github.com/jamesholcombe/dash-auth-external",
