@@ -117,17 +117,24 @@ def make_access_token_route(
             body=body,
             headers=token_request_headers,
         )
+        token = OAuth2Token(
+            access_token=response_data.get("access_token"),
+            token_type=response_data.get("token_type"),
+            expires_in=response_data.get("expires_in"),
+            refresh_token=response_data.get("refresh_token"),
+            token_data=response_data,
+        )
 
         response = redirect(_home_suffix)
 
-        session[FLASK_SESSION_TOKEN_KEY] = asdict(OAuth2Token(**response_data))
+        session[FLASK_SESSION_TOKEN_KEY] = asdict(token)
 
         return response
 
     return app
 
 
-def token_request(url: str, body: dict, headers: dict):
+def token_request(url: str, body: dict, headers: dict) -> dict:
     r = requests.post(url, data=body, headers=headers)
     r.raise_for_status()
     return r.json()
