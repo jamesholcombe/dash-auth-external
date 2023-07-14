@@ -9,6 +9,8 @@ class OAuth2Token:
     expires_in: int = None
     refresh_token: str = None
     expires_at: float = None
+    scope: str = None
+    id_token: str = None
 
     def __post_init__(self):
         if self.expires_at is None and self.expires_in is not None:
