@@ -26,6 +26,12 @@ def access_token_data_with_refresh():
         "refresh_token": "refresh_token",
         "token_type": "Bearer",
         "expires_in": 3599,
+        "token_data": {
+            "access_token": "access_token",
+            "refresh_token": "refresh_token",
+            "token_type": "Bearer",
+            "expires_in": 3599,
+        },
     }
 
 
@@ -35,6 +41,11 @@ def expired_access_token_data_without_refresh():
         "access_token": "access_token",
         "token_type": "Bearer",
         "expires_in": -1,
+        "token_data": {
+            "access_token": "access_token",
+            "token_type": "Bearer",
+            "expires_in": -1,
+        },
     }
 
 
@@ -114,3 +125,21 @@ def test_expired_token_raises_exception(
 
     with pytest.raises(TokenExpiredError):
         test_callback("test")
+
+
+def test_get_token_data_ok(dash_app_and_auth, mocker, access_token_data_with_refresh):
+    dash_app, auth = dash_app_and_auth
+    token = OAuth2Token(
+        **access_token_data_with_refresh,
+    )
+
+    mocker.patch(
+        "dash_auth_external.auth._get_token_data_from_session",
+        return_value=access_token_data_with_refresh,
+    )
+
+    token_compare = auth.get_token_data()
+    assert isinstance(token_compare.expires_at, float)
+    token_compare.expires_at = None
+    token.expires_at = None
+    assert token_compare == token

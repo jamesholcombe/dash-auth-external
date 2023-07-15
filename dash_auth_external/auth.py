@@ -10,6 +10,15 @@ from dash_auth_external.exceptions import TokenExpiredError
 from flask import session
 
 
+def generate_secret_key(length: int = 24) -> str:
+    """Generates a secret key for flask app.
+
+    Returns:
+        bytes: Random bytes of the desired length.
+    """
+    return os.urandom(length)
+
+
 def _get_token_data_from_session() -> dict:
     """Gets the token data from the session.
 
@@ -27,39 +36,6 @@ def _set_token_data_in_session(token: OAuth2Token):
 
 
 class DashAuthExternal:
-    @staticmethod
-    def generate_secret_key(length: int = 24) -> str:
-        """Generates a secret key for flask app.
-
-        Returns:
-            bytes: Random bytes of the desired length.
-        """
-        return os.urandom(length)
-
-    def get_token(self) -> str:
-        """Attempts to get a valid access token.
-
-        Returns:
-            str: Bearer Access token from your OAuth2 Provider
-        """
-        token_data = _get_token_data_from_session()
-
-        token = OAuth2Token(**token_data)
-
-        if not token.is_expired():
-            return token.access_token
-
-        if not token.refresh_token:
-            raise TokenExpiredError(
-                "Token is expired and no refresh token available to refresh token."
-            )
-
-        token_data = refresh_token(
-            self.external_token_url, token_data, self.token_request_headers
-        )
-        _set_token_data_in_session(token_data)
-        return token_data.access_token
-
     def __init__(
         self,
         external_auth_url: str,
@@ -72,11 +48,9 @@ class DashAuthExternal:
         auth_suffix: str = "/",
         home_suffix="/home",
         _flask_server: Flask = None,
-        _token_field_name: str = "access_token",
         _secret_key: str = None,
         auth_request_headers: dict = None,
         token_request_headers: dict = None,
-        token_body_params: dict = None,
         scope: str = None,
         _server_name: str = __name__,
     ):
@@ -95,7 +69,6 @@ class DashAuthExternal:
             _secret_key (str, optional): Secret key for flask app, normally generated at runtime. Defaults to None.
             auth_request_headers (dict, optional): Additional headers to send to the authorization endpoint. Defaults to None.
             token_request_headers (dict, optional): Additional headers to send to the access token endpoint. Defaults to None.
-            token_body_params (dict, optional): Additional body params to send to the access token endpoint. Defaults to None.
             scope (str, optional): Header required by most Oauth2 Providers. Defaults to None.
             _server_name (str, optional): The name of the Flask Server. Defaults to __name__, ignored if _flask_server is not None.
 
@@ -117,7 +90,7 @@ class DashAuthExternal:
             app = _flask_server
 
         if _secret_key is None:
-            app.secret_key = self.generate_secret_key()
+            app.secret_key = generate_secret_key()
         else:
             app.secret_key = _secret_key
 
@@ -149,11 +122,42 @@ class DashAuthExternal:
         self.home_suffix = home_suffix
         self.redirect_suffix = redirect_suffix
         self.auth_suffix = auth_suffix
-        self._token_field_name = _token_field_name
         self.client_id = client_id
         self.external_token_url = external_token_url
         self.token_request_headers = token_request_headers
         self.scope = scope
+
+    def get_token_data(self) -> OAuth2Token:
+        """Attempts to get a valid access token.
+
+        Returns:
+            OAuth2Token: The token data.
+        """
+        token_data = _get_token_data_from_session()
+
+        token = OAuth2Token(**token_data)
+
+        if not token.is_expired():
+            return token
+
+        if not token.refresh_token:
+            raise TokenExpiredError(
+                "Token is expired and no refresh token available to refresh token."
+            )
+
+        token_data = refresh_token(
+            self.external_token_url, token_data, self.token_request_headers
+        )
+        _set_token_data_in_session(token_data)
+        return token_data
+
+    def get_token(self) -> str:
+        """Attempts to get a valid access token.
+
+        Returns:
+            str: The access token.
+        """
+        return self.get_token_data().access_token
 
 
 def refresh_token(url: str, token_data: OAuth2Token, headers: dict) -> OAuth2Token:
@@ -163,13 +167,12 @@ def refresh_token(url: str, token_data: OAuth2Token, headers: dict) -> OAuth2Tok
     }
     data = token_request(url, body, headers)
 
-    token_data.access_token = data["access_token"]
+    new_token = OAuth2Token(
+        access_token=data["access_token"],
+        token_type=data.get("token_type"),
+        expires_in=data.get("expires_in"),
+        refresh_token=data.get("refresh_token"),
+        token_data=data,
+    )
 
-    # If the provider does not return a new refresh token, use the old one.
-    if "refresh_token" in data:
-        token_data.refresh_token = data["refresh_token"]
-
-    if "expires_in" in data:
-        token_data.expires_in = data["expires_in"]
-
-    return token_data
+    return new_token

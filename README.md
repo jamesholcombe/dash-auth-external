@@ -16,7 +16,7 @@ Do you want to build a Plotly Dash app which pulls user data from external APIs 
 pip install dash-auth-external
 ```
 
-## Simple Usage
+## Usage
 
 ```python
 #using spotify as an example
@@ -55,7 +55,27 @@ Input("example-input", "value")
 def example_callback(value):
     token = auth.get_token()
      ##The token can only be retrieved in the context of a dash callback
+
+    token_data = auth.get_token_data()
+    # get_token_data can be used to access other data returned by the OAuth Provider
+    print(token)
+    print(token_data)
+
     return token
+
+```
+
+Results in something like:
+
+```bash
+>>> fakeToken123
+>>> {
+    "access_token" : "fakeToken123",
+    "user_id" : "lucifer",
+    "some_other_key" : 666,
+    "expires_at" : "judgmentDay"
+}
+
 ```
 
 ## Refresh Tokens

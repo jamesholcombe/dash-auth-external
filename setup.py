@@ -5,15 +5,21 @@ from pathlib import Path
 NAME = "dash-auth-external"
 
 this_directory = Path(__file__).parent
-long_description = (
+description = (
     "Integrate your dashboards with 3rd party APIs and external OAuth providers."
 )
+
+with open(this_directory / "README.md", encoding="utf-8") as f:
+    long_description = f.read()
+
+
+
 requires = ["dash >= 2.0.0", "requests >= 1.0.0", "requests-oauthlib >= 0.3.0"]
 
 setup(
     name=NAME,
-    version="1.1.0",
-    description=long_description,
+    version="1.2.0",
+    description=description,
     python_requires=">=3.7",
     author_email="jholcombe@hotmail.co.uk",
     url="https://github.com/jamesholcombe/dash-auth-external",

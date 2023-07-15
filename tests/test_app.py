@@ -44,6 +44,7 @@ def test_flow(with_pkce, with_client_secret, mocker):
             "refresh_token": "refresh_token",
             "token_type": "Bearer",
             "expires_in": "3599",
+            "arbitrary_key": "some_data",
         },
     )
     expected_token_request_body = {
@@ -93,3 +94,4 @@ def test_flow(with_pkce, with_client_secret, mocker):
             assert token_data["refresh_token"] == "refresh_token"
             assert token_data["token_type"] == "Bearer"
             assert token_data["expires_in"] == "3599"
+            assert token_data["token_data"]["arbitrary_key"] == "some_data"
