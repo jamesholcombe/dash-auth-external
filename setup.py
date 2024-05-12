@@ -18,7 +18,7 @@ requires = ["dash >= 2.0.0", "requests >= 1.0.0", "requests-oauthlib >= 0.3.0"]
 
 setup(
     name=NAME,
-    version="1.2.0",
+    version="1.2.1",
     description=description,
     python_requires=">=3.7",
     author_email="jholcombe@hotmail.co.uk",
