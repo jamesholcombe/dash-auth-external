@@ -105,7 +105,8 @@ def test_get_token_with_refresh(
 
     assert test_callback("test") == "access_token"
 
-    refresh_mock.assert_called_once()
+    call_args = refresh_mock.call_args.args
+    assert isinstance(call_args[1], OAuth2Token)
 
 
 def test_expired_token_raises_exception(
