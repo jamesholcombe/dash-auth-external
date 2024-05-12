@@ -145,11 +145,11 @@ class DashAuthExternal:
                 "Token is expired and no refresh token available to refresh token."
             )
 
-        token_data = refresh_token(
-            self.external_token_url, token_data, self.token_request_headers
+        new_token = refresh_token(
+            self.external_token_url, token, self.token_request_headers
         )
-        _set_token_data_in_session(token_data)
-        return token_data
+        _set_token_data_in_session(new_token)
+        return new_token
 
     def get_token(self) -> str:
         """Attempts to get a valid access token.
